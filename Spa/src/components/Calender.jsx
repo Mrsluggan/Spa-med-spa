@@ -1,56 +1,47 @@
-import React from 'react'
-import { useState } from 'react'
-export default function Calender() {
-    const [dates, setDates] = useState([]);
-    var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+import React, { useState, useEffect } from 'react';
+import Day from './Day';
 
+export default function Calendar(props) {
+    const [dates, setDates] = useState([]);
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
     const tdStyle = {
         padding: '8px',
         textAlign: 'left',
         borderBottom: '1px solid #ddd',
     };
-    const generateDates = () => {
+
+    const generateDates = (numDays) => {
         const newDates = Array.from(Array(7).keys()).map((idx) => {
             const d = new Date();
+            d.setDate(numDays);
+
             d.setDate(d.getDate() - d.getDay() + idx);
             return d;
         });
         setDates(newDates);
     };
-    useState(() => {
-        generateDates();
-    }, []);
 
-    const printDates = dates.map(function (date, index) {
-        return (
-            <tr key={index}>
-                <td style={tdStyle}>{date.toLocaleDateString()}<div>{days[date.getDay()]}</div></td>
-                
-                <td style={tdStyle}>
-                    <div><h3>Förmiddag</h3></div>
-                    <div>Kallt</div>
-                    <div>Varmt</div>
-                </td>
-                <td style={tdStyle}>
-                    <div><h3>Eftermiddag</h3></div>
-                    <div>Kallt</div>
-                    <div>Varmt</div>
-                </td>
-                <td style={tdStyle}>
-                    <div><h3>Kväll</h3></div>
-                    <div>Kallt</div>
-                    <div>Varmt</div>
-                </td>
-            </tr>
-        );
-    });
+    useEffect(() => {
+        generateDates(props.page || 7);
+    }, [props.page]);
+
+    const printDates = dates.map((date, index) => (
+        <tr key={index}>
+            <td style={tdStyle}>{date.toLocaleDateString()}<div>{days[date.getDay()]}</div></td>
+            <Day name="Förmiddag" />
+            <Day name="Eftermiddag" />
+            <Day name="Kväll" />
+        </tr>
+    ));
 
     return (
         <div>
-            <ul>
-                {printDates}
-            </ul>
+            <table>
+                <tbody>
+                    {printDates}
+                </tbody>
+            </table>
         </div>
     );
 }
-
