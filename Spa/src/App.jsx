@@ -4,16 +4,25 @@ import './App.css'
 import DbTestSave from './components/dbTestSave'
 import Calender from './components/Calender'
 function App() {
-  const [page,setPage] = useState(7)
+  const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date()) - 1)
+
+  function getWeekNumber(date) {
+    const oneJan = new Date(date.getFullYear(), 0, 1);
+    const numberOfDays = Math.floor((date - oneJan) / (24 * 60 * 60 * 1000));
+    return Math.ceil((date.getDay() + numberOfDays) / 7);
+  }
+
+
 
   const handleOnclick = (e) => {
     const id = e.currentTarget.getAttribute('id');
     if (id === "prev") {
-      setPage(prev => prev - 14);
+      setWeekNumber(weekNumber => weekNumber - 1);
     } else {
-      setPage(prev => prev + 14);
+      setWeekNumber(weekNumber => weekNumber + 1);
     }
   }
+
   return (
     <>
       <div>
@@ -23,7 +32,7 @@ function App() {
         <div>
           <button id='prev' onClick={handleOnclick}>Förra veckan</button> <button id='next' onClick={handleOnclick}>Nästa Vecka</button><br />
           <input type="date" name="" id="" />
-          <Calender page={page}/>
+          <Calender weekNumber={weekNumber} />
         </div>
       </div>
     </>
