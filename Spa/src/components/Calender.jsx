@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 export default function Calendar(props) {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const [dates, setDates] = useState([]);
     const [bookedWeeks, setBookedWeeks] = useState([]);
 
@@ -10,28 +10,50 @@ export default function Calendar(props) {
         textAlign: 'left',
         borderBottom: '1px solid #ddd',
     };
-
-
-
-    const generateDates = (weekNumber) => {
-        const daysInWeek = 7;
-        const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1);
-        const firstDayOfGivenWeek = new Date(firstDayOfYear);
-        firstDayOfGivenWeek.setDate(firstDayOfGivenWeek.getDate() + (weekNumber - 1) * daysInWeek);
-
-        const newDates = [];
-
-        for (let idx = 0; idx < daysInWeek; idx++) {
-            const d = new Date(firstDayOfGivenWeek);
-            d.setDate(d.getDate() + idx);
-            newDates.push(d);
+    const fetchData = async (year) => {
+        try {
+            const response = await fetch(`https://sholiday.faboul.se/dagar/v2.1/${year}`);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            throw error; 
         }
+    }
 
-        setDates(newDates);
+    const generateDates = async (weekNumber) => {
+        fetchData(new Date().getFullYear())
+            .then(data => {
+                console.log(data);
+                const daysInWeek = 7;
+                const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1);
+                const firstDayOfGivenWeek = new Date(firstDayOfYear);
+                firstDayOfGivenWeek.setDate(firstDayOfGivenWeek.getDate() + (weekNumber - 1) * daysInWeek);
+                const newDates = [];
+
+                const redDays = data.dagar.filter (dagar => dagar.vecka.toString() === weekNumber.toString());
+                console.log(redDays);
+
+                for (let idx = 0; idx < daysInWeek; idx++) {
+                    
+                    const d = new Date(firstDayOfGivenWeek);
+                    d.setDate(d.getDate() + idx);
+                    if (redDays.filter(dagar => dagar.datum === d.toLocaleDateString())) {
+                        console.log("röddag");
+                    }
+                    newDates.push(d);
+                }
+
+                setDates(newDates);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
     };
 
     const bookTime = (date, partOfDay, packageType) => {
-        const weekNumber = getWeekNumber(date);
+        const weekNumber = props.weekNumber;
         const existingWeekIndex = bookedWeeks.findIndex(week => week.weekNumber === weekNumber);
 
         if (existingWeekIndex !== -1) {
@@ -39,12 +61,10 @@ export default function Calendar(props) {
             const existingDayIndex = existingWeek.days.findIndex(day => day.date === date.toLocaleDateString());
 
             if (existingDayIndex !== -1) {
-                // Update existing day's bookings
                 const updatedWeeks = [...bookedWeeks];
                 updatedWeeks[existingWeekIndex].days[existingDayIndex].booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
                 setBookedWeeks(updatedWeeks);
             } else {
-                // Add new day with booking
                 const updatedWeeks = [...bookedWeeks];
                 updatedWeeks[existingWeekIndex].days.push({
                     date: date.toLocaleDateString(),
@@ -58,7 +78,6 @@ export default function Calendar(props) {
                 setBookedWeeks(updatedWeeks);
             }
         } else {
-            // Add new week with new day and booking
             const updatedWeeks = [...bookedWeeks];
             updatedWeeks.push({
                 weekNumber: weekNumber,
@@ -81,7 +100,7 @@ export default function Calendar(props) {
     }, [props.weekNumber]);
 
     const printDates = dates.map((date, index) => {
-        const bookedWeek = bookedWeeks.find(week => week.weekNumber === getWeekNumber(date));
+        const bookedWeek = bookedWeeks.find(week => week.weekNumber === props.weekNumber);
         const bookedDay = bookedWeek ? bookedWeek.days.find(day => day.date === date.toLocaleDateString()) : null;
         console.log(bookedDay);
         return (<tr key={index}>
@@ -89,7 +108,7 @@ export default function Calendar(props) {
                 <div>{date.toLocaleDateString()}</div>
                 <div>{days[date.getDay()]}</div>
             </td>
-            <td>{bookedWeek ? bookedWeek.weekNumber : getWeekNumber(date)}</td>
+            <td>{bookedWeek ? bookedWeek.weekNumber : props.weekNumber}</td>
             <td style={tdStyle}>
                 <div><h3>Förmiddag</h3></div>
                 <button onClick={() => bookTime(date, 'morning', 'cold')}>
@@ -139,11 +158,5 @@ export default function Calendar(props) {
             </table>
         </div>
     );
-}
-
-function getWeekNumber(date) {
-    const oneJan = new Date(date.getFullYear(), 0, 1);
-    const numberOfDays = Math.floor((date - oneJan) / (24 * 60 * 60 * 1000));
-    return Math.ceil((date.getDay() + 1 + numberOfDays) / 7);
 }
 
