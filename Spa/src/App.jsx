@@ -1,21 +1,29 @@
 import { useState } from 'react'
-
+import About from './components/About'
+import Home from './components/Home'
+import Contact from './components/Contact'
+import NoPage from './components/NoPage'
 import './App.css'
-import DbTestSave from './components/dbTestSave'
 import Calender from './components/Calender'
-function App() {
-  let audio = new Audio("/SecretMusic.mp3")
+import Header from './components/Header'
+import Navbar from './components/Navbar'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+function App() {
+
+  //Varför jag måste ha -1 vettefan, men hatar states
   const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date()) - 1)
   //Returnar veckans nummer med hjälp av en funktion
   function getWeekNumber(date) {
     const oneJan = new Date(date.getFullYear(), 0, 1);
     const numberOfDays = Math.floor((date - oneJan) / (24 * 60 * 60 * 1000));
-    return Math.ceil((date.getDay() + numberOfDays) / 7);
+    const result = Math.ceil((date.getDay() + numberOfDays) / 7);
+    return result;
+
+
   }
-  const start = () => {
-    audio.play()
-  }
+
+
 
   //Tillåter Pagenation, ändrar veckans nummer som i sin tur uppdaterar kalendern
   const handleOnclick = (e) => {
@@ -29,20 +37,22 @@ function App() {
 
   return (
     <>
-      <div>
-        <h1>Välkommen till Spa spa</h1>
-        Välj vilken dag du vill boka
 
-        <div>
-          <button id='prev' onClick={handleOnclick}>Förra veckan</button> <button id='next' onClick={handleOnclick}>Nästa Vecka</button><br />
-          <input type="date" name="" id="" />
-          <Calender weekNumber={weekNumber} />
-        </div>
+      <BrowserRouter>
+        <Navbar />
+        <Header />
+        <Routes>
 
-        < div >
-          <button onClick={start}>Danger, dont press</button>
-        </div >
-      </div>
+          <Route index element={<Home />} />
+          <Route path="contact" element={<Contact />} />
+          <Route path="about" element={<About />} />
+          <Route path="Calender" element={<div>
+            <button id='prev' onClick={handleOnclick}>Förra veckan</button> <button id='next' onClick={handleOnclick}>Nästa Vecka</button><br />
+            <input type="date" name="" id="" /> -- under construction
+            <Calender weekNumber={weekNumber} /></div>} />
+          <Route path="*" element={<NoPage />} />
+        </Routes>
+      </BrowserRouter>
     </>
   )
 }

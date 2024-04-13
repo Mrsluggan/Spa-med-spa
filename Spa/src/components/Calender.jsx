@@ -17,31 +17,36 @@ export default function Calendar(props) {
             return data;
         } catch (error) {
             console.error('Error fetching data:', error);
-            throw error; 
+            throw error;
         }
     }
 
     const generateDates = async (weekNumber) => {
+        if (weekNumber < 10) {
+            weekNumber = "0" + weekNumber;
+        }
+
         fetchData(new Date().getFullYear())
             .then(data => {
-                console.log(data);
                 const daysInWeek = 7;
                 const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1);
                 const firstDayOfGivenWeek = new Date(firstDayOfYear);
                 firstDayOfGivenWeek.setDate(firstDayOfGivenWeek.getDate() + (weekNumber - 1) * daysInWeek);
+                console.log(weekNumber);
                 const newDates = [];
 
-                const redDays = data.dagar.filter (dagar => dagar.vecka.toString() === weekNumber.toString());
+                const redDays = data.dagar.filter(dagar => dagar.vecka.toString() === weekNumber.toString());
                 console.log(redDays);
-
                 for (let idx = 0; idx < daysInWeek; idx++) {
-                    
+
                     const d = new Date(firstDayOfGivenWeek);
                     d.setDate(d.getDate() + idx);
-                    if (redDays.filter(dagar => dagar.datum === d.toLocaleDateString())) {
-                        console.log("röddag");
+                    if (redDays[idx]["röd dag"] === "Ja" || redDays[idx]["veckodag"] == "Måndag") {
+                    } else {
+                        newDates.push(d);
+
                     }
-                    newDates.push(d);
+
                 }
 
                 setDates(newDates);
@@ -96,13 +101,14 @@ export default function Calendar(props) {
     };
 
     useEffect(() => {
+        console.log();
         generateDates(props.weekNumber);
     }, [props.weekNumber]);
 
     const printDates = dates.map((date, index) => {
         const bookedWeek = bookedWeeks.find(week => week.weekNumber === props.weekNumber);
         const bookedDay = bookedWeek ? bookedWeek.days.find(day => day.date === date.toLocaleDateString()) : null;
-        console.log(bookedDay);
+        //      console.log(bookedDay);
         return (<tr key={index}>
             <td style={tdStyle}>
                 <div>{date.toLocaleDateString()}</div>
@@ -110,38 +116,52 @@ export default function Calendar(props) {
             </td>
             <td>{bookedWeek ? bookedWeek.weekNumber : props.weekNumber}</td>
             <td style={tdStyle}>
-                <div><h3>Förmiddag</h3></div>
-                <button onClick={() => bookTime(date, 'morning', 'cold')}>
-                    {bookedDay && bookedDay.booked.morning.cold.length > 0 ? bookedDay.booked.morning.cold[0] : "Boka"}
-                </button>
-                <button onClick={() => bookTime(date, 'morning', 'warm')}>
-                    {bookedDay && bookedDay.booked.morning.warm.length > 0 ? bookedDay.booked.morning.warm[0] : "Boka"}
-                </button>
+                <div>
+                    <h3>Förmiddag</h3>
+                    <div className="temperature">Kallt
+                        <button onClick={() => bookTime(date, 'morning', 'cold')}>
+                            {bookedDay && bookedDay.booked.morning.cold.length > 0 ? bookedDay.booked.morning.cold[0] : "Boka"}
+                        </button>
+                    </div>
+                    <div className="temperature">Kallt
+
+                    <button onClick={() => bookTime(date, 'morning', 'warm')}>
+                        {bookedDay && bookedDay.booked.morning.warm.length > 0 ? bookedDay.booked.morning.warm[0] : "Boka"}
+                    </button>
+                    </div>
+                </div>
             </td>
             <td style={tdStyle}>
-                <div><h3>Eftermiddag</h3></div>
-                <button onClick={() => bookTime(date, 'afternoon', 'cold')}>
-                    {bookedDay && bookedDay.booked.afternoon.cold.length > 0 ? bookedDay.booked.afternoon.cold[0] : "Boka"}
-                </button>
-                <button onClick={() => bookTime(date, 'afternoon', 'warm')}>
-                    {bookedDay && bookedDay.booked.afternoon.warm.length > 0 ? bookedDay.booked.afternoon.warm[0] : "Boka"}
-                </button>
+                <div>
+                    <h3>Eftermiddag</h3>
+                    <div className="temperature">Kallt</div>
+                    <button onClick={() => bookTime(date, 'afternoon', 'cold')}>
+                        {bookedDay && bookedDay.booked.afternoon.cold.length > 0 ? bookedDay.booked.afternoon.cold[0] : "Boka"}
+                    </button>
+                    <button onClick={() => bookTime(date, 'afternoon', 'warm')}>
+                        {bookedDay && bookedDay.booked.afternoon.warm.length > 0 ? bookedDay.booked.afternoon.warm[0] : "Boka"}
+                    </button>
+                </div>
             </td>
             <td style={tdStyle}>
-                <div><h3>Kväll</h3></div>
-                <button onClick={() => bookTime(date, 'evening', 'cold')}>
-                    {bookedDay && bookedDay.booked.evening.cold.length > 0 ? bookedDay.booked.evening.cold[0] : "Boka"}
-                </button>
-                <button onClick={() => bookTime(date, 'evening', 'warm')}>
-                    {bookedDay && bookedDay.booked.evening.warm.length > 0 ? bookedDay.booked.evening.warm[0] : "Boka"}
-                </button>
+                <div>
+                    <h3>Kväll</h3>
+                    <div className="temperature">Kallt</div>
+                    <button onClick={() => bookTime(date, 'evening', 'cold')}>
+                        {bookedDay && bookedDay.booked.evening.cold.length > 0 ? bookedDay.booked.evening.cold[0] : "Boka"}
+                    </button>
+                    <button onClick={() => bookTime(date, 'evening', 'warm')}>
+                        {bookedDay && bookedDay.booked.evening.warm.length > 0 ? bookedDay.booked.evening.warm[0] : "Boka"}
+                    </button>
+                </div>
             </td>
-        </tr>
-        );
+
+        </tr>);
     });
 
     return (
         <div>
+
             <table>
                 <thead>
                     <tr>
