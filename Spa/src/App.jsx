@@ -28,11 +28,16 @@ function App() {
   //Tillåter Pagenation, ändrar veckans nummer som i sin tur uppdaterar kalendern
   const handleOnclick = (e) => {
     const id = e.currentTarget.getAttribute('id');
-    if (id === "prev") {
-      setWeekNumber(weekNumber => weekNumber - 1);
-    } else {
-      setWeekNumber(weekNumber => weekNumber + 1);
+    if (weekNumber >= 1) {
+      if (id === "prev") {
+        setWeekNumber(weekNumber => weekNumber - 1);
+      } else if (weekNumber === 1) {
+        setWeekNumber(weekNumber => weekNumber + 0);
+      } else {
+        setWeekNumber(weekNumber => weekNumber + 1);
+      }
     }
+
   }
 
   return (
@@ -49,6 +54,9 @@ function App() {
           <Route path="Calender" element={<div>
             <button id='prev' onClick={handleOnclick}>Förra veckan</button> <button id='next' onClick={handleOnclick}>Nästa Vecka</button><br />
             <input type="date" name="" id="" /> -- under construction
+            <h3>
+              Glöm inte, om du bokar så kan du inte ångra dig....
+            </h3>
             <Calender weekNumber={weekNumber} /></div>} />
           <Route path="*" element={<NoPage />} />
         </Routes>

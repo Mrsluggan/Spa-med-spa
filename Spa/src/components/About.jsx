@@ -10,7 +10,7 @@ export default function About() {
       <h3>Våra tjänster inkluderar:</h3>
       <ul>
         <li>Varmt bad, då badar du i vatten som är varmt</li>
-        <li>Kallt bad, då badar du i vatten som inte är varmt, man kan säga att vatnet är kallt</li>
+        <li>Kallt bad, då badar du i vatten som inte är varmt, man kan säga att vattnet är kallt</li>
       </ul>
       <p>Och kom ihåg, vi är inte bara ett spa - vi är en all-inclusive semesterort för din själ! Så boka din resa till Spa spa idag och låt oss ge dig ett fräscht perspektiv på livet. Vem vet, du kanske till och med hittar ditt inre zen och börjar prata med växter. (Vi kommer att hålla det som vår lilla hemlighet!)</p>
       <p>Kom och släpp loss din inre ro, för i vårt spa är det inte bara lugnt - det är en komedi-show för själen!</p>

@@ -10,6 +10,16 @@ export default function Calendar(props) {
         textAlign: 'left',
         borderBottom: '1px solid #ddd',
     };
+
+    const saveBookedWeeksToLocalStorage = (bookedWeeksData) => {
+        localStorage.setItem('bookedWeeks', JSON.stringify(bookedWeeksData));
+    };
+
+    const loadBookedWeeksFromLocalStorage = () => {
+        const bookedWeeksData = localStorage.getItem('bookedWeeks');
+        return bookedWeeksData ? JSON.parse(bookedWeeksData) : [];
+    };
+
     const fetchData = async (year) => {
         try {
             const response = await fetch(`https://sholiday.faboul.se/dagar/v2.1/${year}`);
@@ -19,41 +29,44 @@ export default function Calendar(props) {
             console.error('Error fetching data:', error);
             throw error;
         }
-    }
+    };
 
     const generateDates = async (weekNumber) => {
-        if (weekNumber < 10) {
-            weekNumber = "0" + weekNumber;
-        }
+        if (weekNumber > 0) {
+            if (weekNumber < 10) {
+                weekNumber = "0" + weekNumber;
+            }
 
-        fetchData(new Date().getFullYear())
-            .then(data => {
-                const daysInWeek = 7;
-                const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1);
-                const firstDayOfGivenWeek = new Date(firstDayOfYear);
-                firstDayOfGivenWeek.setDate(firstDayOfGivenWeek.getDate() + (weekNumber - 1) * daysInWeek);
-                console.log(weekNumber);
-                const newDates = [];
+            fetchData(new Date().getFullYear())
+                .then(data => {
+                    const daysInWeek = 7;
+                    const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1);
+                    const firstDayOfGivenWeek = new Date(firstDayOfYear);
+                    firstDayOfGivenWeek.setDate(firstDayOfGivenWeek.getDate() + (weekNumber - 1) * daysInWeek);
+                    console.log(weekNumber);
+                    const newDates = [];
 
-                const redDays = data.dagar.filter(dagar => dagar.vecka.toString() === weekNumber.toString());
-                console.log(redDays);
-                for (let idx = 0; idx < daysInWeek; idx++) {
+                    const redDays = data.dagar.filter(dagar => dagar.vecka.toString() === weekNumber.toString());
+                    console.log(redDays);
+                    for (let idx = 0; idx < daysInWeek; idx++) {
 
-                    const d = new Date(firstDayOfGivenWeek);
-                    d.setDate(d.getDate() + idx);
-                    if (redDays[idx]["röd dag"] === "Ja" || redDays[idx]["veckodag"] == "Måndag") {
-                    } else {
-                        newDates.push(d);
+                        const d = new Date(firstDayOfGivenWeek);
+                        d.setDate(d.getDate() + idx);
+                        if (redDays[idx]["röd dag"] === "Ja" || redDays[idx]["veckodag"] == "Måndag") {
+                        } else {
+                            newDates.push(d);
+
+                        }
 
                     }
 
-                }
+                    setDates(newDates);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
 
-                setDates(newDates);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
+        }
 
     };
 
@@ -69,6 +82,7 @@ export default function Calendar(props) {
                 const updatedWeeks = [...bookedWeeks];
                 updatedWeeks[existingWeekIndex].days[existingDayIndex].booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
                 setBookedWeeks(updatedWeeks);
+                saveBookedWeeksToLocalStorage(updatedWeeks);
             } else {
                 const updatedWeeks = [...bookedWeeks];
                 updatedWeeks[existingWeekIndex].days.push({
@@ -81,6 +95,7 @@ export default function Calendar(props) {
                 });
                 updatedWeeks[existingWeekIndex].days[updatedWeeks[existingWeekIndex].days.length - 1].booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
                 setBookedWeeks(updatedWeeks);
+                saveBookedWeeksToLocalStorage(updatedWeeks);
             }
         } else {
             const updatedWeeks = [...bookedWeeks];
@@ -97,12 +112,17 @@ export default function Calendar(props) {
             });
             updatedWeeks[updatedWeeks.length - 1].days[0].booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
             setBookedWeeks(updatedWeeks);
+            saveBookedWeeksToLocalStorage(updatedWeeks);
         }
     };
 
     useEffect(() => {
         console.log();
         generateDates(props.weekNumber);
+        const loadedBookedWeeks = loadBookedWeeksFromLocalStorage();
+        if (loadedBookedWeeks.length > 0) {
+            setBookedWeeks(loadedBookedWeeks);
+        }
     }, [props.weekNumber]);
 
     const printDates = dates.map((date, index) => {
@@ -123,36 +143,45 @@ export default function Calendar(props) {
                             {bookedDay && bookedDay.booked.morning.cold.length > 0 ? bookedDay.booked.morning.cold[0] : "Boka"}
                         </button>
                     </div>
-                    <div className="temperature">Kallt
+                    <div className="temperature">Varmt
 
-                    <button onClick={() => bookTime(date, 'morning', 'warm')}>
-                        {bookedDay && bookedDay.booked.morning.warm.length > 0 ? bookedDay.booked.morning.warm[0] : "Boka"}
-                    </button>
+                        <button onClick={() => bookTime(date, 'morning', 'warm')}>
+                            {bookedDay && bookedDay.booked.morning.warm.length > 0 ? bookedDay.booked.morning.warm[0] : "Boka"}
+                        </button>
                     </div>
                 </div>
             </td>
             <td style={tdStyle}>
                 <div>
                     <h3>Eftermiddag</h3>
-                    <div className="temperature">Kallt</div>
-                    <button onClick={() => bookTime(date, 'afternoon', 'cold')}>
-                        {bookedDay && bookedDay.booked.afternoon.cold.length > 0 ? bookedDay.booked.afternoon.cold[0] : "Boka"}
-                    </button>
-                    <button onClick={() => bookTime(date, 'afternoon', 'warm')}>
-                        {bookedDay && bookedDay.booked.afternoon.warm.length > 0 ? bookedDay.booked.afternoon.warm[0] : "Boka"}
-                    </button>
+                    <div className="temperature">Kallt
+                        <button onClick={() => bookTime(date, 'afternoon', 'cold')}>
+                            {bookedDay && bookedDay.booked.afternoon.cold.length > 0 ? bookedDay.booked.afternoon.cold[0] : "Boka"}
+                        </button>
+                    </div>
+                    <div className="temperature">Varmt
+                        <button onClick={() => bookTime(date, 'afternoon', 'warm')}>
+                            {bookedDay && bookedDay.booked.afternoon.warm.length > 0 ? bookedDay.booked.afternoon.warm[0] : "Boka"}
+                        </button>
+                    </div>
+
                 </div>
             </td>
             <td style={tdStyle}>
                 <div>
                     <h3>Kväll</h3>
-                    <div className="temperature">Kallt</div>
-                    <button onClick={() => bookTime(date, 'evening', 'cold')}>
-                        {bookedDay && bookedDay.booked.evening.cold.length > 0 ? bookedDay.booked.evening.cold[0] : "Boka"}
-                    </button>
-                    <button onClick={() => bookTime(date, 'evening', 'warm')}>
-                        {bookedDay && bookedDay.booked.evening.warm.length > 0 ? bookedDay.booked.evening.warm[0] : "Boka"}
-                    </button>
+                    <div className="temperature">Kallt
+                        <button onClick={() => bookTime(date, 'evening', 'cold')}>
+                            {bookedDay && bookedDay.booked.evening.cold.length > 0 ? bookedDay.booked.evening.cold[0] : "Boka"}
+                        </button>
+                    </div>
+
+                    <div className="temperature">Varmt
+                        <button onClick={() => bookTime(date, 'evening', 'warm')}>
+                            {bookedDay && bookedDay.booked.evening.warm.length > 0 ? bookedDay.booked.evening.warm[0] : "Boka"}
+                        </button>
+                    </div>
+
                 </div>
             </td>
 
@@ -179,4 +208,3 @@ export default function Calendar(props) {
         </div>
     );
 }
-

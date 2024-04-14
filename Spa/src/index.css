@@ -13,11 +13,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 .temperature {
-  text-align: center;
   font-weight: bold;
   margin-bottom: 5px;
 }
-
+.temperature button{
+ 
+}
 a {
   font-weight: 500;
   color: #646cff;
