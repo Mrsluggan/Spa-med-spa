@@ -13,7 +13,7 @@ export default function Home() {
         </div>
         <div className='text'>
           <img src='/PoolRelax.webp'></img>
-          DELUX spa med kallavfettning och stålborste, sedan hoppa ner i polen med före detta brottsling Jörgen. Om du har tur kommer han berätta historier om tiderna före fängelset
+          DELUX spa med kallavfettning och stålborste, sedan hoppa ner i polen med före detta brottsling Jörgen. Om du har tur kommer han berätta historier om tiderna före fängelset. Titta inte han in i ögenen för länge bara.
         </div>
         <div className='text'>
           <img src='/BeforeAfter.PNG'></img>

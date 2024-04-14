@@ -11,8 +11,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
 
-  //Varför jag måste ha -1 vettefan, men hatar states
-  const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date()) - 1)
+  const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date()))
   //Returnar veckans nummer med hjälp av en funktion
   function getWeekNumber(date) {
     const oneJan = new Date(date.getFullYear(), 0, 1);
@@ -22,7 +21,6 @@ function App() {
 
 
   }
-
 
 
   //Tillåter Pagenation, ändrar veckans nummer som i sin tur uppdaterar kalendern
@@ -47,16 +45,11 @@ function App() {
         <Navbar />
         <Header />
         <Routes>
-
           <Route index element={<Home />} />
           <Route path="contact" element={<Contact />} />
           <Route path="about" element={<About />} />
           <Route path="Calender" element={<div>
             <button id='prev' onClick={handleOnclick}>Förra veckan</button> <button id='next' onClick={handleOnclick}>Nästa Vecka</button><br />
-            <input type="date" name="" id="" /> -- under construction
-            <h3>
-              Glöm inte, om du bokar så kan du inte ångra dig....
-            </h3>
             <Calender weekNumber={weekNumber} /></div>} />
           <Route path="*" element={<NoPage />} />
         </Routes>

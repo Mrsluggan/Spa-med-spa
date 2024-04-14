@@ -21,7 +21,7 @@ export default function Navbar() {
             <li className="navItem"><a href='/about'>About</a></li>
             <li className="navItem"><a href='/contact'>Contact</a></li>
             <li className="navItem"><a href='/calender'>Book Appointment</a></li>
-            <button onClick={start}>Don't press me</button>
+            <button style={{float: 'right'}} onClick={start}>Don't press me</button>
 
         </div>
     )

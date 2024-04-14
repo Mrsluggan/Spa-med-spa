@@ -10,11 +10,20 @@ export default function Calendar(props) {
         textAlign: 'left',
         borderBottom: '1px solid #ddd',
     };
+    const button = {
 
+        button: {
+            float: 'right'
+        }
+    }
     const saveBookedWeeksToLocalStorage = (bookedWeeksData) => {
         localStorage.setItem('bookedWeeks', JSON.stringify(bookedWeeksData));
     };
 
+    const clearBooking = () => {
+        localStorage.clear();
+        setBookedWeeks([]);
+    }
     const loadBookedWeeksFromLocalStorage = () => {
         const bookedWeeksData = localStorage.getItem('bookedWeeks');
         return bookedWeeksData ? JSON.parse(bookedWeeksData) : [];
@@ -73,18 +82,14 @@ export default function Calendar(props) {
     const bookTime = (date, partOfDay, packageType) => {
         const weekNumber = props.weekNumber;
         const existingWeekIndex = bookedWeeks.findIndex(week => week.weekNumber === weekNumber);
+        const existingWeek = existingWeekIndex !== -1 ? bookedWeeks[existingWeekIndex] : null;
 
-        if (existingWeekIndex !== -1) {
-            const existingWeek = bookedWeeks[existingWeekIndex];
+        if (existingWeek) {
             const existingDayIndex = existingWeek.days.findIndex(day => day.date === date.toLocaleDateString());
+            const isNewDay = existingDayIndex === -1;
 
-            if (existingDayIndex !== -1) {
-                const updatedWeeks = [...bookedWeeks];
-                updatedWeeks[existingWeekIndex].days[existingDayIndex].booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
-                setBookedWeeks(updatedWeeks);
-                saveBookedWeeksToLocalStorage(updatedWeeks);
-            } else {
-                const updatedWeeks = [...bookedWeeks];
+            const updatedWeeks = isNewDay ? [...bookedWeeks] : bookedWeeks.slice();
+            if (isNewDay) {
                 updatedWeeks[existingWeekIndex].days.push({
                     date: date.toLocaleDateString(),
                     booked: {
@@ -93,13 +98,14 @@ export default function Calendar(props) {
                         evening: { warm: [], cold: [] }
                     }
                 });
-                updatedWeeks[existingWeekIndex].days[updatedWeeks[existingWeekIndex].days.length - 1].booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
-                setBookedWeeks(updatedWeeks);
-                saveBookedWeeksToLocalStorage(updatedWeeks);
             }
+            updatedWeeks[existingWeekIndex].days[isNewDay ? updatedWeeks[existingWeekIndex].days.length - 1 : existingDayIndex]
+                .booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
+
+            setBookedWeeks(updatedWeeks);
+            saveBookedWeeksToLocalStorage(updatedWeeks);
         } else {
-            const updatedWeeks = [...bookedWeeks];
-            updatedWeeks.push({
+            const newWeek = {
                 weekNumber: weekNumber,
                 days: [{
                     date: date.toLocaleDateString(),
@@ -109,15 +115,17 @@ export default function Calendar(props) {
                         evening: { warm: [], cold: [] }
                     }
                 }]
-            });
-            updatedWeeks[updatedWeeks.length - 1].days[0].booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
+            };
+            newWeek.days[0].booked[partOfDay][packageType].push(prompt("Skriv vem som ska boka"));
+
+            const updatedWeeks = [...bookedWeeks, newWeek];
             setBookedWeeks(updatedWeeks);
             saveBookedWeeksToLocalStorage(updatedWeeks);
         }
     };
 
+
     useEffect(() => {
-        console.log();
         generateDates(props.weekNumber);
         const loadedBookedWeeks = loadBookedWeeksFromLocalStorage();
         if (loadedBookedWeeks.length > 0) {
@@ -136,7 +144,7 @@ export default function Calendar(props) {
             </td>
             <td>{bookedWeek ? bookedWeek.weekNumber : props.weekNumber}</td>
             <td style={tdStyle}>
-                <div>
+                <div style={button}>
                     <h3>Förmiddag</h3>
                     <div className="temperature">Kallt
                         <button onClick={() => bookTime(date, 'morning', 'cold')}>
@@ -190,7 +198,8 @@ export default function Calendar(props) {
 
     return (
         <div>
-
+            Glöm inte, om du bokar så kan du inte ångra dig.... <br></br>
+            eller klicka på denna knapp <button onClick={clearBooking}>rensa bokningar</button>
             <table>
                 <thead>
                     <tr>
